@@ -41,7 +41,7 @@ public class WeatherController {
 
     @RequestMapping(path = "/weather", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public Weather getWeather(@RequestParam(value = "city") String city,
+    public GenericJson getWeather(@RequestParam(value = "city") String city,
                               HttpServletResponse response) {
         Weather weather = null;
         String query = String.format(WEATHER_API + "?q=%s&units=metric&APPID=%s", city, TOKEN);
@@ -56,6 +56,9 @@ public class WeatherController {
         } catch (IOException e) {
             log.error(e.getMessage());
             response.setStatus(404);
+            GenericJson notFoundJsonResponse = new GenericJson();
+            notFoundJsonResponse.put("status", "city not found");
+            return notFoundJsonResponse;
         }
         return weather;
     }

@@ -8,12 +8,13 @@ RUN mvn install
 
 ADD ./src /build/src
 RUN mvn clean
+RUN mvn test
 RUN mvn package
 
 # Runtime Environment
 FROM openjdk:8-jre
-COPY --from=build /build/target/demo-0.0.1-SNAPSHOT.jar /bin/demo/demo-0.0.1-SNAPSHOT.jar
+COPY --from=build /build/target/weather-0.0.1-SNAPSHOT.jar /bin/weather/weather-0.0.1-SNAPSHOT.jar
 
 EXPOSE 8080
 
-CMD ["java", "-jar", "/bin/demo/demo-0.0.1-SNAPSHOT.jar"]
+CMD ["java", "-jar", "/bin/weather/weather-0.0.1-SNAPSHOT.jar"]
