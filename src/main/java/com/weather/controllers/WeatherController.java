@@ -10,6 +10,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ArrayMap;
+import com.weather.cache.CacheHelper;
 import com.weather.weather.Weather;
 import com.weather.weather.WeatherDetails;
 import org.slf4j.Logger;
@@ -35,6 +36,7 @@ public class WeatherController {
     private static final String WEATHER_API = "https://api.openweathermap.org/data/2.5/weather";
     private static HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static JsonFactory JSON_FACTORY = new JacksonFactory();
+    private static CacheHelper cache = new CacheHelper();
 
     @Value("${weatherapi.token}")
     private String TOKEN;
@@ -42,16 +44,20 @@ public class WeatherController {
     @RequestMapping(path = "/weather", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public GenericJson getWeather(@RequestParam(value = "city") String city,
-                              HttpServletResponse response) {
-        Weather weather = null;
+                                  HttpServletResponse response) {
+        Weather weather;
         String query = String.format(WEATHER_API + "?q=%s&units=metric&APPID=%s", city, TOKEN);
-        GenericUrl url = new GenericUrl(query);
 
+        if (cache.getResponseCache().containsKey(query)) {
+            return cache.getResponseCache().get(query);
+        }
         try {
+            GenericUrl url = new GenericUrl(query);
             HttpRequest request = getHttpRequest(url);
             GenericJson json = request.execute().parseAs(GenericJson.class);
             WeatherDetails details = buildWeatherDetailsFromJson(json);
             weather = buildWeatherFromJson(json, details);
+            cache.getResponseCache().put(query, weather);
             log.info(weather.toString());
         } catch (IOException e) {
             log.error(e.getMessage());

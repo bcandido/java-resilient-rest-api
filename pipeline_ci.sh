@@ -8,6 +8,7 @@ ENABLE_BUILD="true"
 ENABLE_DEPLOY="true"
 DAEMON_MODO=false
 
+
 if [ ! -f ./pipeline_ci.sh ]; then
     echo "This script should be run on the same directory it resides."
     exit 1
@@ -48,7 +49,7 @@ function build() {
     echo "**** Starting build process"
 
     [[ -z ${NO_CACHE} ]] && echo "No cache build enabled"
-    docker build ${NO_CACHE} -t ${SERVICE} .
+    docker build ${NO_CACHE} -t ${SERVICE} -f Dockerfile-ci .
 
     echo "**** Finished build process"
 }
@@ -70,6 +71,9 @@ function deploy() {
 function run_pipeline() {
     echo "---- Starting Pipeline ----"
     echo ""
+
+    VERSION=$(git rev-parse --short HEAD)
+    echo "building git short hash = ${VERSION}"
 
     [[ ${ENABLE_BUILD} != "true" ]] && echo "Skipping build..." || build
     [[ ${ENABLE_DEPLOY} != "true" ]] && echo "Skipping deploy..." || deploy
