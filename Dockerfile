@@ -4,12 +4,8 @@ FROM maven:3.5.2-jdk-8-alpine AS build
 WORKDIR /build
 
 ADD ./pom.xml /build
-RUN mvn install
-
 ADD ./src /build/src
-RUN mvn clean
-RUN mvn test
-RUN mvn package
+RUN mvn clean package install
 
 # Runtime Environment
 FROM openjdk:8-jre
