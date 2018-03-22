@@ -10,12 +10,12 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.JsonObjectParser;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ArrayMap;
-import com.weather.cache.CacheHelper;
 import com.weather.weather.Weather;
 import com.weather.weather.WeatherDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +27,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
+import static com.weather.configuration.CacheConfiguration.SHORT_LIVED_CITY_WEATHER;
 import static org.springframework.web.bind.annotation.RequestMethod.GET;
 
 @Controller
@@ -36,11 +37,8 @@ public class WeatherController {
     private static final String WEATHER_API = "https://api.openweathermap.org/data/2.5/weather";
     private static HttpTransport HTTP_TRANSPORT = new NetHttpTransport();
     private static JsonFactory JSON_FACTORY = new JacksonFactory();
-    private static CacheHelper cache = new CacheHelper();
 
-    @Value("${weatherapi.token}")
-    private String TOKEN;
-
+    @Cacheable(SHORT_LIVED_CITY_WEATHER)
     @RequestMapping(path = "/weather", method = GET, produces = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
     public GenericJson getWeather(@RequestParam(value = "city") String city,
@@ -48,16 +46,12 @@ public class WeatherController {
         Weather weather;
         String query = String.format(WEATHER_API + "?q=%s&units=metric&APPID=%s", city, TOKEN);
 
-        if (cache.getResponseCache().containsKey(query)) {
-            return cache.getResponseCache().get(query);
-        }
         try {
             GenericUrl url = new GenericUrl(query);
             HttpRequest request = getHttpRequest(url);
             GenericJson json = request.execute().parseAs(GenericJson.class);
             WeatherDetails details = buildWeatherDetailsFromJson(json);
             weather = buildWeatherFromJson(json, details);
-            cache.getResponseCache().put(query, weather);
             log.info(weather.toString());
         } catch (IOException e) {
             log.error(e.getMessage());
@@ -68,6 +62,9 @@ public class WeatherController {
         }
         return weather;
     }
+
+    @Value("${com.weather.api.token}")
+    private String TOKEN;
 
     /**
      * Get Http Request Object
