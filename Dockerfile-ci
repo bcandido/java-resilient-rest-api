@@ -1,8 +1,11 @@
 # Build Environment
 FROM maven:3.5.2-jdk-8-alpine AS build
 
+ENV MAVEN_OPTS="-Dmaven.repo.local=/build/.m2/repository"
+
 WORKDIR /build
 
+ADD .m2/ /build/.m2
 ADD ./pom.xml /build
 RUN mvn dependency:resolve
 
