@@ -1,4 +1,4 @@
-package com.weather.weather;
+package com.weather.pojo;
 
 import com.google.api.client.json.GenericJson;
 import com.google.api.client.util.Key;
@@ -9,6 +9,23 @@ import lombok.ToString;
 @ToString
 public class Weather extends GenericJson {
 
+    @Key
+    @Getter
+    @Setter
+    private String city;
+    @Key
+    @Getter
+    @Setter
+    private String weather;
+    @Key
+    @Getter
+    @Setter
+    private String description;
+    @Key
+    @Getter
+    @Setter
+    private WeatherDetails details;
+
     public Weather(String city, String weather, String description,
                    WeatherDetails details) {
         this.city = city;
@@ -16,24 +33,4 @@ public class Weather extends GenericJson {
         this.description = description;
         this.details = details;
     }
-
-    @Key
-    @Getter
-    @Setter
-    private String city;
-
-    @Key
-    @Getter
-    @Setter
-    private String weather;
-
-    @Key
-    @Getter
-    @Setter
-    private String description;
-
-    @Key
-    @Getter
-    @Setter
-    private WeatherDetails details;
 }
