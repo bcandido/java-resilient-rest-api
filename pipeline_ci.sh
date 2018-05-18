@@ -50,6 +50,10 @@ function build() {
 
     [[ -z ${NO_CACHE} ]] && echo "No cache build enabled"
     docker build ${NO_CACHE} -t ${SERVICE} -f Dockerfile-ci .
+    if [[ $? -ne 0 ]]; then
+        echo "[ERROR] fail building docker image. Exiting..."
+        exit 1
+    fi
 
     echo "**** Finished build process"
 }
